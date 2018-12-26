@@ -13,7 +13,7 @@ TEST(NICKNAME_TEST, nickname_test)
     auto itr = nickNameTree.begin();
     ASSERT_EQ(*itr, "astra");
     ++itr;
-    ASSERT_EQ(*itr, "l");
+    ASSERT_EQ(*itr, "astral");
     ++itr;
     ASSERT_EQ(*itr, "b");
     ++itr;
@@ -28,15 +28,15 @@ TEST(NICKNAME_TEST, nickname_test)
     nickNameTree2.insert("bulkp");
 
     auto itr2 = nickNameTree2.begin();
-    ASSERT_EQ(*itr2, "k");
+    ASSERT_EQ(*itr2, "astrak");
     ++itr2;
-    ASSERT_EQ(*itr2, "p");
+    ASSERT_EQ(*itr2, "astralp");
     ++itr2;
-    ASSERT_EQ(*itr2, "s");
+    ASSERT_EQ(*itr2, "astrals");
     ++itr2;
-    ASSERT_EQ(*itr2, "p");
+    ASSERT_EQ(*itr2, "bulkp");
     ++itr2;
-    ASSERT_EQ(*itr2, "s");
+    ASSERT_EQ(*itr2, "bulks");
     ++itr2;
     ASSERT_EQ(itr2, nickNameTree2.end() );
 }

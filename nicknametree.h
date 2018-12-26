@@ -17,9 +17,7 @@ namespace nickname
 namespace internal
 {
 
-class BaseNickNameTreeIterator;
 class NickNameTreeIterator;
-class ConstNickNameTreeIterator;
 
 struct NickNameTreeNode
 {
@@ -31,11 +29,13 @@ struct NickNameTreeNode
     bool isEnd = false;
     std::array<std::unique_ptr<NickNameTreeNode>, 26> children;
 
-    friend class BaseNickNameTreeIterator;
     friend class NickNameTreeIterator;
-    friend class ConstNickNameTreeIterator;
 private:
+    const std::string& getValue() const;
+
     NickNameTreeNode* parent = nullptr;
+    mutable std::string cacheValue;
+    mutable bool cacheIsLoaded = false;
 };
 
 struct InsertPair
@@ -45,12 +45,47 @@ struct InsertPair
     NickNameTreeNode* insertNode;
 };
 
-class BaseNickNameTreeIterator
+class NickNameTreeIterator
 {
 public:
-    BaseNickNameTreeIterator(NickNameTreeNode* node = nullptr):
-        node(node){}
-protected:
+    typedef std::bidirectional_iterator_tag iterator_category;
+
+    explicit NickNameTreeIterator(NickNameTreeNode* node = nullptr) noexcept:
+        node(node)
+    {
+    }
+
+    const std::string& operator*() const noexcept
+    {
+        return node->getValue();
+    }
+
+    const std::string* operator->() const noexcept
+    {
+        return &(node->value);
+    }
+
+    NickNameTreeIterator& operator++() noexcept
+    {
+        switchToNext();
+        return *this;
+    }
+
+    NickNameTreeIterator operator++(int) noexcept
+    {
+        NickNameTreeIterator tmp = *this;
+        switchToNext();
+        return tmp;
+    }
+
+    bool operator==(const NickNameTreeIterator& rhs) const noexcept
+    { return node == rhs.node; }
+
+    bool operator!=(const NickNameTreeIterator& rhs) const noexcept
+    { return node != rhs.node; }
+
+private:
+
     void switchToNext()
     {
         auto child = findDown(node, 0);
@@ -107,86 +142,6 @@ protected:
     }
 
     NickNameTreeNode* node;
-};
-
-class NickNameTreeIterator: private BaseNickNameTreeIterator
-{
-public:
-    typedef std::bidirectional_iterator_tag iterator_category;
-
-    explicit NickNameTreeIterator(NickNameTreeNode* node = nullptr) noexcept:
-        BaseNickNameTreeIterator(node)
-    {
-    }
-
-    std::string& operator*() const noexcept
-    {
-        return node->value;
-    }
-
-    std::string* operator->() const noexcept
-    {
-        return &(node->value);
-    }
-
-    NickNameTreeIterator& operator++() noexcept
-    {
-        switchToNext();
-        return *this;
-    }
-
-    NickNameTreeIterator operator++(int) noexcept
-    {
-        NickNameTreeIterator tmp = *this;
-        switchToNext();
-        return tmp;
-    }
-
-    bool operator==(const NickNameTreeIterator& rhs) const noexcept
-    { return node == rhs.node; }
-
-    bool operator!=(const NickNameTreeIterator& rhs) const noexcept
-    { return node != rhs.node; }
-
-};
-
-class ConstNickNameTreeIterator: private BaseNickNameTreeIterator
-{
-public:
-    typedef std::bidirectional_iterator_tag iterator_category;
-
-    explicit ConstNickNameTreeIterator(NickNameTreeNode* node) noexcept:
-        BaseNickNameTreeIterator(node)
-    {}
-
-    const std::string& operator*() const noexcept
-    {
-        return node->value;
-    }
-
-    const std::string* operator->() const noexcept
-    {
-        return &(node->value);
-    }
-
-    ConstNickNameTreeIterator& operator++() noexcept
-    {
-        switchToNext();
-        return *this;
-    }
-
-    ConstNickNameTreeIterator operator++(int) noexcept
-    {
-        ConstNickNameTreeIterator tmp = *this;
-        switchToNext();
-        return tmp;
-    }
-
-    bool operator==(const ConstNickNameTreeIterator& rhs) const noexcept
-    { return node == rhs.node; }
-
-    bool operator!=(const ConstNickNameTreeIterator& rhs) const noexcept
-    { return node != rhs.node; }
 };
 
 }

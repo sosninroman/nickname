@@ -5,6 +5,31 @@
 namespace nickname
 {
 
+namespace internal
+{
+const std::string& NickNameTreeNode::getValue() const
+{
+    if(!cacheIsLoaded)
+    {
+        std::stack<const NickNameTreeNode*> fillStack;
+        const NickNameTreeNode* node = this;
+        while(node)
+        {
+            fillStack.push(node);
+            node = node->parent;
+        }
+        while(!fillStack.empty() )
+        {
+            cacheValue.append(fillStack.top()->value);
+            fillStack.pop();
+        }
+        cacheIsLoaded = true;
+    }
+    return cacheValue;
+}
+
+}
+
 void NickNameTree::insert(const std::string& str)
 {
     if( str.empty() )

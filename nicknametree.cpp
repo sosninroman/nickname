@@ -67,9 +67,21 @@ void NickNameTree::insert(const std::string& str)
                 auto pair = std::mismatch( valueInTree.begin(), valueInTree.end(), insertPair.value.begin() );
                 if( pair.first != valueInTree.end() )
                 {
-                    insertStack.emplace(std::string(pair.first, valueInTree.end() ), node);
-                    valueInTree.assign(valueInTree.begin(), pair.first);
                     node->isEnd = false;
+                    ind = *pair.first - 'a';
+                    auto newChild =
+                            std::make_unique<internal::NickNameTreeNode>(std::string(pair.first, valueInTree.end() ), nullptr, true);
+                    for(size_t ind = 0; ind < 26; ++ind)
+                    {
+                        if(node->children[ind])
+                        {
+                            node->children[ind]->parent = newChild.get();
+                            newChild->children[ind] = std::move(node->children[ind]);
+                        }
+                    }
+                    newChild->parent = node;
+                    node->children[ind] = std::move(newChild);
+                    valueInTree.assign(valueInTree.begin(), pair.first);
                 }
                 if(pair.second != insertPair.value.end() )
                 {
@@ -84,9 +96,21 @@ void NickNameTree::insert(const std::string& str)
                 auto pair = std::mismatch( insertPair.value.begin(), insertPair.value.end(), valueInTree.begin() );
                 if(pair.second != valueInTree.end() )
                 {
-                    insertStack.emplace(std::string(pair.second, valueInTree.end() ), node);
-                    valueInTree.assign(valueInTree.begin(), pair.second);
                     node->isEnd = false;
+                    ind = *pair.second - 'a';
+                    auto newChild =
+                            std::make_unique<internal::NickNameTreeNode>(std::string(pair.second, valueInTree.end() ), nullptr, true);
+                    for(size_t ind = 0; ind < 26; ++ind)
+                    {
+                        if(node->children[ind])
+                        {
+                            node->children[ind]->parent = newChild.get();
+                            newChild->children[ind] = std::move(node->children[ind]);
+                        }
+                    }
+                    newChild->parent = node;
+                    node->children[ind] = std::move(newChild);
+                    valueInTree.assign(valueInTree.begin(), pair.second);
                 }
                 if( pair.first != insertPair.value.end() )
                 {

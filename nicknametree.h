@@ -31,7 +31,7 @@ struct NickNameTreeNode
     std::array<std::unique_ptr<NickNameTreeNode>, 26> children;
 
     friend class NickNameTreeIterator;
-private:
+
     const std::pair<std::string, std::string>& getValue() const;
 
     NickNameTreeNode* parent = nullptr;

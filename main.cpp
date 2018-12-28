@@ -5,12 +5,17 @@ int main()
 {
     nickname::NickNameTree nickNameTree2;
 
-    nickNameTree2.insert("astralp");
-    nickNameTree2.insert("astrak");
-    nickNameTree2.insert("astrals");
-    nickNameTree2.insert("bulks");
-    nickNameTree2.insert("bulkp");
+    nickNameTree2.insert("alek");
+    nickNameTree2.insert("sasha");
+    nickNameTree2.insert("aleks");
+    nickNameTree2.insert("aleksey");
+    nickNameTree2.insert("alesha");
 
+    for(const auto pair : nickNameTree2)
+    {
+        std::cout << "{" << pair.first << "," << pair.second << "}" << std::endl;
+    }
+    std::cout << std::endl;
     nickNameTree2.print();
     return 0;
 }

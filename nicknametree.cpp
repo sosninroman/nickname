@@ -43,6 +43,38 @@ const std::pair<std::string, std::string> &NickNameTreeNode::getValue() const
 
 }
 
+void NickNameTree::__insert(int& ind, internal::NickNameTreeNode*& node,
+                            std::string& valueInTree,
+                            internal::InsertPair& insertPair,
+                            std::string::iterator valueInTreeIterator, std::string::iterator insertValueIterator)
+{
+    if( valueInTreeIterator != valueInTree.end() )
+    {
+        node->isEnd = false;
+        ind = *valueInTreeIterator - 'a';
+        auto newChild =
+                std::make_unique<internal::NickNameTreeNode>(std::string(valueInTreeIterator, valueInTree.end() ), nullptr, true);
+        for(size_t ind = 0; ind < 26; ++ind)
+        {
+            if(node->children[ind])
+            {
+                node->children[ind]->parent = newChild.get();
+                newChild->children[ind] = std::move(node->children[ind]);
+            }
+        }
+        newChild->parent = node;
+        node->children[ind] = std::move(newChild);
+        valueInTree.assign(valueInTree.begin(), valueInTreeIterator);
+    }
+    if(insertValueIterator != insertPair.value.end() )
+    {
+        ind = *insertValueIterator - 'a';
+        insertPair.value.assign(insertValueIterator, insertPair.value.end() );
+        insertPair.insertNode = node;
+        node = node->children[ind].get();
+    }
+}
+
 void NickNameTree::insert(const std::string& str)
 {
     if( str.empty() )
@@ -65,60 +97,62 @@ void NickNameTree::insert(const std::string& str)
             if( valueInTree.size() < insertPair.value.size() )
             {
                 auto pair = std::mismatch( valueInTree.begin(), valueInTree.end(), insertPair.value.begin() );
-                if( pair.first != valueInTree.end() )
-                {
-                    node->isEnd = false;
-                    ind = *pair.first - 'a';
-                    auto newChild =
-                            std::make_unique<internal::NickNameTreeNode>(std::string(pair.first, valueInTree.end() ), nullptr, true);
-                    for(size_t ind = 0; ind < 26; ++ind)
-                    {
-                        if(node->children[ind])
-                        {
-                            node->children[ind]->parent = newChild.get();
-                            newChild->children[ind] = std::move(node->children[ind]);
-                        }
-                    }
-                    newChild->parent = node;
-                    node->children[ind] = std::move(newChild);
-                    valueInTree.assign(valueInTree.begin(), pair.first);
-                }
-                if(pair.second != insertPair.value.end() )
-                {
-                    ind = *pair.second - 'a';
-                    insertPair.value.assign(pair.second, insertPair.value.end() );
-                    insertPair.insertNode = node;
-                    node = node->children[ind].get();
-                }
+              __insert(ind, node, valueInTree, insertPair,pair.first, pair.second);
+//                if( pair.first != valueInTree.end() )
+//                {
+//                    node->isEnd = false;
+//                    ind = *pair.first - 'a';
+//                    auto newChild =
+//                            std::make_unique<internal::NickNameTreeNode>(std::string(pair.first, valueInTree.end() ), nullptr, true);
+//                    for(size_t ind = 0; ind < 26; ++ind)
+//                    {
+//                        if(node->children[ind])
+//                        {
+//                            node->children[ind]->parent = newChild.get();
+//                            newChild->children[ind] = std::move(node->children[ind]);
+//                        }
+//                    }
+//                    newChild->parent = node;
+//                    node->children[ind] = std::move(newChild);
+//                    valueInTree.assign(valueInTree.begin(), pair.first);
+//                }
+//                if(pair.second != insertPair.value.end() )
+//                {
+//                    ind = *pair.second - 'a';
+//                    insertPair.value.assign(pair.second, insertPair.value.end() );
+//                    insertPair.insertNode = node;
+//                    node = node->children[ind].get();
+//                }
             }
             else
             {
                 auto pair = std::mismatch( insertPair.value.begin(), insertPair.value.end(), valueInTree.begin() );
-                if(pair.second != valueInTree.end() )
-                {
-                    node->isEnd = false;
-                    ind = *pair.second - 'a';
-                    auto newChild =
-                            std::make_unique<internal::NickNameTreeNode>(std::string(pair.second, valueInTree.end() ), nullptr, true);
-                    for(size_t ind = 0; ind < 26; ++ind)
-                    {
-                        if(node->children[ind])
-                        {
-                            node->children[ind]->parent = newChild.get();
-                            newChild->children[ind] = std::move(node->children[ind]);
-                        }
-                    }
-                    newChild->parent = node;
-                    node->children[ind] = std::move(newChild);
-                    valueInTree.assign(valueInTree.begin(), pair.second);
-                }
-                if( pair.first != insertPair.value.end() )
-                {
-                    ind = *pair.first - 'a';
-                    insertPair.value.assign(pair.first, insertPair.value.end() );
-                    insertPair.insertNode = node;
-                    node = node->children[ind].get();
-                }
+              __insert(ind, node, valueInTree, insertPair,pair.second, pair.first);
+//                if(pair.second != valueInTree.end() )
+//                {
+//                    node->isEnd = false;
+//                    ind = *pair.second - 'a';
+//                    auto newChild =
+//                            std::make_unique<internal::NickNameTreeNode>(std::string(pair.second, valueInTree.end() ), nullptr, true);
+//                    for(size_t ind = 0; ind < 26; ++ind)
+//                    {
+//                        if(node->children[ind])
+//                        {
+//                            node->children[ind]->parent = newChild.get();
+//                            newChild->children[ind] = std::move(node->children[ind]);
+//                        }
+//                    }
+//                    newChild->parent = node;
+//                    node->children[ind] = std::move(newChild);
+//                    valueInTree.assign(valueInTree.begin(), pair.second);
+//                }
+//                if( pair.first != insertPair.value.end() )
+//                {
+//                    ind = *pair.first - 'a';
+//                    insertPair.value.assign(pair.first, insertPair.value.end() );
+//                    insertPair.insertNode = node;
+//                    node = node->children[ind].get();
+//                }
             }
         }
         if( !insertPair.value.empty() )

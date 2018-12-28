@@ -166,6 +166,11 @@ public:
 
     void print() const;
 private:
+    void __insert(int& ind, internal::NickNameTreeNode*& node,
+                                std::string& valueInTree,
+                                internal::InsertPair& insertPair,
+                                std::string::iterator valueInTreeIterator, std::string::iterator insertValueIterator);
+
     friend class nicknametest::NickNameTreeAccessor;
     size_t m_size;
     internal::NickNameTreeNode m_root;

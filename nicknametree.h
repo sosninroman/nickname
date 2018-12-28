@@ -1,6 +1,7 @@
 #ifndef NICKNAMETREE_H
 #define NICKNAMETREE_H
 
+#include <utility>
 #include <stack>
 #include <memory>
 #include <array>
@@ -31,10 +32,10 @@ struct NickNameTreeNode
 
     friend class NickNameTreeIterator;
 private:
-    const std::string& getValue() const;
+    const std::pair<std::string, std::string>& getValue() const;
 
     NickNameTreeNode* parent = nullptr;
-    mutable std::string cacheValue;
+    mutable std::pair<std::string, std::string> cacheValue;
     mutable bool cacheIsLoaded = false;
 };
 
@@ -55,14 +56,14 @@ public:
     {
     }
 
-    const std::string& operator*() const noexcept
+    const std::pair<std::string, std::string>& operator*() const noexcept
     {
         return node->getValue();
     }
 
-    const std::string* operator->() const noexcept
+    const std::pair<std::string, std::string>* operator->() const noexcept
     {
-        return &(node->value);
+        return &(node->getValue() );
     }
 
     NickNameTreeIterator& operator++() noexcept
@@ -162,6 +163,8 @@ public:
     {
         return iterator();
     }
+
+    void print() const;
 private:
     friend class nicknametest::NickNameTreeAccessor;
     size_t m_size;

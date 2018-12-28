@@ -1,29 +1,42 @@
 #include "nicknametree.h"
 #include <algorithm>
 #include <stack>
+#include <iostream>
+#include <iomanip>
 
 namespace nickname
 {
 
 namespace internal
 {
-const std::string& NickNameTreeNode::getValue() const
+const std::pair<std::string, std::string> &NickNameTreeNode::getValue() const
 {
     if(!cacheIsLoaded)
     {
-        std::stack<const NickNameTreeNode*> fillStack;
+        std::stack<const NickNameTreeNode*> nodesStack;
         const NickNameTreeNode* node = this;
         while(node)
         {
-            fillStack.push(node);
+            nodesStack.push(node);
             node = node->parent;
         }
-        while(!fillStack.empty() )
+        while(!nodesStack.empty() )
         {
-            cacheValue.append(fillStack.top()->value);
-            fillStack.pop();
+            const NickNameTreeNode* node = nodesStack.top();
+            cacheValue.first.append(node->value);
+            node->cacheValue.first = cacheValue.first;
+            if(node->parent)
+            {
+                std::string prefix;
+                if(node->parent->getValue().first.empty() )
+                    prefix = node->value;
+                else
+                    prefix = node->parent->getValue().first + std::string(node->value.begin(), node->value.begin()+1);
+                node->cacheValue.second = prefix;
+            }
+            node->cacheIsLoaded = true;
+            nodesStack.pop();
         }
-        cacheIsLoaded = true;
     }
     return cacheValue;
 }
@@ -115,6 +128,40 @@ NickNameTree::iterator NickNameTree::begin()
             break;
     }
     return iterator(result);
+}
+
+void NickNameTree::print() const
+{
+    std::stack<internal::NickNameTreeNode*> nodeStack;
+    std::stack<int> depthStack;
+    for(auto& node : m_root.children)
+    {
+        if(node)
+        {
+            nodeStack.push(node.get() );
+            depthStack.push(0);
+            while(!nodeStack.empty() )
+            {
+                internal::NickNameTreeNode* node = nodeStack.top();
+                int depth = depthStack.top();
+                depthStack.pop();
+                nodeStack.pop();
+                std::cout << std::setfill('|')
+                          << std::setw(depth + node->value.size() + 1)
+                          << std::string("+")+node->value
+                          << (node->isEnd ? '$' : ' ')
+                          << std::endl;
+                for(auto& child : node->children)
+                {
+                    if(child)
+                    {
+                        nodeStack.push(child.get() );
+                        depthStack.push(depth+1);
+                    }
+                }
+            }
+        }
+    }
 }
 
 }

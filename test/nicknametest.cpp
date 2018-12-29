@@ -1,50 +1,119 @@
 #include <gtest/gtest.h>
-#include "nicknametreeaccessor.h"
+#include "nicknametree.h"
 
-TEST(NICKNAME_TEST, nickname_test)
+TEST(NICKNAME_TEST, test1)
 {
     nickname::NickNameTree nickNameTree;
-    ASSERT_TRUE(nicknametest::NickNameTreeAccessor::getRootNode(nickNameTree) );
+
+    ASSERT_EQ(nickNameTree.size(), 0);
 
     nickNameTree.insert("astra");
     nickNameTree.insert("astral");
     nickNameTree.insert("b");
 
+    ASSERT_EQ(nickNameTree.size(), 3);
+
     auto itr = nickNameTree.begin();
-    ASSERT_EQ(itr->first, "astra");
-    ASSERT_EQ(itr->second, "astra");
+    ASSERT_EQ(itr.fullValue(), "astra");
+    ASSERT_EQ(itr.shortValue(), "astra");
     ++itr;
-    ASSERT_EQ(itr->first, "astral");
-    ASSERT_EQ(itr->second, "astral");
+    ASSERT_EQ(itr.fullValue(), "astral");
+    ASSERT_EQ(itr.shortValue(), "astral");
     ++itr;
-    ASSERT_EQ(itr->first, "b");
-    ASSERT_EQ(itr->second, "b");
+    ASSERT_EQ(itr.fullValue(), "b");
+    ASSERT_EQ(itr.shortValue(), "b");
     ++itr;
     ASSERT_EQ(itr, nickNameTree.end() );
+}
 
-    nickname::NickNameTree nickNameTree2;
+TEST(NICKNAME_TEST, test2)
+{
+    nickname::NickNameTree nickNameTree;
 
-    nickNameTree2.insert("astralp");
-    nickNameTree2.insert("astrak");
-    nickNameTree2.insert("astrals");
-    nickNameTree2.insert("bulks");
-    nickNameTree2.insert("bulkp");
+    ASSERT_EQ(nickNameTree.size(), 0);
 
-    auto itr2 = nickNameTree2.begin();
-    ASSERT_EQ(itr2->first, "astrak");
-    ASSERT_EQ(itr2->second, "astrak");
-    ++itr2;
-    ASSERT_EQ(itr2->first, "astralp");
-    ASSERT_EQ(itr2->second, "astralp");
-    ++itr2;
-    ASSERT_EQ(itr2->first, "astrals");
-    ASSERT_EQ(itr2->second, "astrals");
-    ++itr2;
-    ASSERT_EQ(itr2->first, "bulkp");
-    ASSERT_EQ(itr2->second, "bulkp");
-    ++itr2;
-    ASSERT_EQ(itr2->first, "bulks");
-    ASSERT_EQ(itr2->second, "bulks");
-    ++itr2;
-    ASSERT_EQ(itr2, nickNameTree2.end() );
+    nickNameTree.insert("astralp");
+    nickNameTree.insert("astrak");
+    nickNameTree.insert("astrals");
+    nickNameTree.insert("bulks");
+    nickNameTree.insert("bulkp");
+
+    ASSERT_EQ(nickNameTree.size(), 5);
+
+    auto itr = nickNameTree.begin();
+    ASSERT_EQ(itr.fullValue(), "astrak");
+    ASSERT_EQ(itr.shortValue(), "astrak");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "astralp");
+    ASSERT_EQ(itr.shortValue(), "astralp");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "astrals");
+    ASSERT_EQ(itr.shortValue(), "astrals");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "bulkp");
+    ASSERT_EQ(itr.shortValue(), "bulkp");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "bulks");
+    ASSERT_EQ(itr.shortValue(), "bulks");
+    ++itr;
+    ASSERT_EQ(itr, nickNameTree.end() );
+}
+
+TEST(NICKNAME_TEST, test3)
+{
+    nickname::NickNameTree nickNameTree;
+
+    nickNameTree.insert("alek");
+    nickNameTree.insert("sasha");
+    nickNameTree.insert("aleks");
+    nickNameTree.insert("aleksey");
+    nickNameTree.insert("alesha");
+
+    ASSERT_EQ(nickNameTree.size(), 5);
+
+    auto itr = nickNameTree.begin();
+    ASSERT_EQ(itr.fullValue(), "alek");
+    ASSERT_EQ(itr.shortValue(), "alek");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "aleks");
+    ASSERT_EQ(itr.shortValue(), "aleks");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "aleksey");
+    ASSERT_EQ(itr.shortValue(), "alekse");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "alesha");
+    ASSERT_EQ(itr.shortValue(), "ales");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "sasha");
+    ASSERT_EQ(itr.shortValue(), "s");
+    ++itr;
+    ASSERT_EQ(itr, nickNameTree.end() );
+}
+
+TEST(NICKNAME_TEST, test4)
+{
+    nickname::NickNameTree nickNameTree;
+
+    nickNameTree.insert("alek");
+    nickNameTree.insert("alek");
+    nickNameTree.insert("aleks");
+    nickNameTree.insert("aleksey");
+    nickNameTree.insert("alesha");
+
+    ASSERT_EQ(nickNameTree.size(), 4);
+
+    auto itr = nickNameTree.begin();
+    ASSERT_EQ(itr.fullValue(), "alek");
+    ASSERT_EQ(itr.shortValue(), "alek");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "aleks");
+    ASSERT_EQ(itr.shortValue(), "aleks");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "aleksey");
+    ASSERT_EQ(itr.shortValue(), "alekse");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "alesha");
+    ASSERT_EQ(itr.shortValue(), "ales");
+    ++itr;
+    ASSERT_EQ(itr, nickNameTree.end() );
 }

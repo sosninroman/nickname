@@ -1,171 +1,183 @@
 #include "nicknametree.h"
 #include <algorithm>
-#include <stack>
 #include <iostream>
 #include <iomanip>
+#include <cassert>
 
 namespace nickname
 {
 
 namespace internal
 {
-const std::pair<std::string, std::string> &NickNameTreeNode::getValue() const
+
+void NickNameTreeIterator::switchToNext()
 {
-    if(!cacheIsLoaded)
+    auto child = findDown(node, 0);
+    if(child)
     {
-        std::stack<const NickNameTreeNode*> nodesStack;
-        const NickNameTreeNode* node = this;
+        node = child;
+    }
+    else
+    {
+        auto ind = node->value[0] - ALPHABET_FIRST_SYMBOL;
+        node = node->parent;
         while(node)
         {
-            nodesStack.push(node);
-            node = node->parent;
-        }
-        while(!nodesStack.empty() )
-        {
-            const NickNameTreeNode* node = nodesStack.top();
-            cacheValue.first.append(node->value);
-            node->cacheValue.first = cacheValue.first;
-            if(node->parent)
+            auto child = findDown(node, ind+1);
+            if(child)
             {
-                std::string prefix;
-                if(node->parent->getValue().first.empty() )
-                    prefix = node->value;
-                else
-                    prefix = node->parent->getValue().first + std::string(node->value.begin(), node->value.begin()+1);
-                node->cacheValue.second = prefix;
-            }
-            node->cacheIsLoaded = true;
-            nodesStack.pop();
-        }
-    }
-    return cacheValue;
-}
-
-}
-
-void NickNameTree::__insert(int& ind, internal::NickNameTreeNode*& node,
-                            std::string& valueInTree,
-                            internal::InsertPair& insertPair,
-                            std::string::iterator valueInTreeIterator, std::string::iterator insertValueIterator)
-{
-    if( valueInTreeIterator != valueInTree.end() )
-    {
-        node->isEnd = false;
-        ind = *valueInTreeIterator - 'a';
-        auto newChild =
-                std::make_unique<internal::NickNameTreeNode>(std::string(valueInTreeIterator, valueInTree.end() ), nullptr, true);
-        for(size_t ind = 0; ind < 26; ++ind)
-        {
-            if(node->children[ind])
-            {
-                node->children[ind]->parent = newChild.get();
-                newChild->children[ind] = std::move(node->children[ind]);
-            }
-        }
-        newChild->parent = node;
-        node->children[ind] = std::move(newChild);
-        valueInTree.assign(valueInTree.begin(), valueInTreeIterator);
-    }
-    if(insertValueIterator != insertPair.value.end() )
-    {
-        ind = *insertValueIterator - 'a';
-        insertPair.value.assign(insertValueIterator, insertPair.value.end() );
-        insertPair.insertNode = node;
-        node = node->children[ind].get();
-    }
-}
-
-void NickNameTree::insert(const std::string& str)
-{
-    if( str.empty() )
-        return;
-
-    std::stack<internal::InsertPair> insertStack;
-    insertStack.push({str, &m_root});
-
-    while(!insertStack.empty() )
-    {
-        internal::InsertPair insertPair = insertStack.top();
-        insertStack.pop();
-
-        auto ind = insertPair.value[0]-'a';
-        internal::NickNameTreeNode* node = insertPair.insertNode->children[ind].get();
-
-        while( node && !insertPair.value.empty() )
-        {
-            std::string& valueInTree = node->value;
-            if( valueInTree.size() < insertPair.value.size() )
-            {
-                auto pair = std::mismatch( valueInTree.begin(), valueInTree.end(), insertPair.value.begin() );
-              __insert(ind, node, valueInTree, insertPair,pair.first, pair.second);
-//                if( pair.first != valueInTree.end() )
-//                {
-//                    node->isEnd = false;
-//                    ind = *pair.first - 'a';
-//                    auto newChild =
-//                            std::make_unique<internal::NickNameTreeNode>(std::string(pair.first, valueInTree.end() ), nullptr, true);
-//                    for(size_t ind = 0; ind < 26; ++ind)
-//                    {
-//                        if(node->children[ind])
-//                        {
-//                            node->children[ind]->parent = newChild.get();
-//                            newChild->children[ind] = std::move(node->children[ind]);
-//                        }
-//                    }
-//                    newChild->parent = node;
-//                    node->children[ind] = std::move(newChild);
-//                    valueInTree.assign(valueInTree.begin(), pair.first);
-//                }
-//                if(pair.second != insertPair.value.end() )
-//                {
-//                    ind = *pair.second - 'a';
-//                    insertPair.value.assign(pair.second, insertPair.value.end() );
-//                    insertPair.insertNode = node;
-//                    node = node->children[ind].get();
-//                }
+                node = child;
+                break;
             }
             else
             {
-                auto pair = std::mismatch( insertPair.value.begin(), insertPair.value.end(), valueInTree.begin() );
-              __insert(ind, node, valueInTree, insertPair,pair.second, pair.first);
-//                if(pair.second != valueInTree.end() )
-//                {
-//                    node->isEnd = false;
-//                    ind = *pair.second - 'a';
-//                    auto newChild =
-//                            std::make_unique<internal::NickNameTreeNode>(std::string(pair.second, valueInTree.end() ), nullptr, true);
-//                    for(size_t ind = 0; ind < 26; ++ind)
-//                    {
-//                        if(node->children[ind])
-//                        {
-//                            node->children[ind]->parent = newChild.get();
-//                            newChild->children[ind] = std::move(node->children[ind]);
-//                        }
-//                    }
-//                    newChild->parent = node;
-//                    node->children[ind] = std::move(newChild);
-//                    valueInTree.assign(valueInTree.begin(), pair.second);
-//                }
-//                if( pair.first != insertPair.value.end() )
-//                {
-//                    ind = *pair.first - 'a';
-//                    insertPair.value.assign(pair.first, insertPair.value.end() );
-//                    insertPair.insertNode = node;
-//                    node = node->children[ind].get();
-//                }
+                ind = node->value[0] - ALPHABET_FIRST_SYMBOL;
+                node = node->parent;
             }
         }
-        if( !insertPair.value.empty() )
-            insertPair.insertNode->children[ind] =
-                    std::make_unique<internal::NickNameTreeNode>(insertPair.value, insertPair.insertNode, true);
     }
 }
 
-NickNameTree::iterator NickNameTree::begin()
+NickNameTreeNode* NickNameTreeIterator::findDown(NickNameTreeNode* startNode, size_t startInd)
+{
+    std::stack<NickNameTreeNode*> searchStack;
+    searchStack.push(startNode);
+    while(!searchStack.empty() )
+    {
+        NickNameTreeNode* searchNode = searchStack.top();
+        searchStack.pop();
+        for(auto ind = startInd; ind < searchNode->children.size(); ++ind)
+        {
+            auto child = searchNode->children[ind].get();
+            if(child)
+            {
+                if(child->isEnd)
+                {
+                    return child;
+                }
+                else
+                {
+                    searchStack.push(child);
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
+const std::string& NickNameTreeNode::getFullValue() const
+{
+    if(!fullValueIsLoaded)
+    {
+        if(!parent)
+            fullValue = value;
+        else
+        {
+            auto prev = parent->getFullValue();
+            fullValue = prev + value;
+        }
+        fullValueIsLoaded = true;
+    }
+    return fullValue;
+}
+
+const std::string& NickNameTreeNode::getShortValue() const
+{
+    if(!shortValueIsLoaded)
+    {
+        if(parent)
+        {
+            shortValue = parent->getFullValue();
+        }
+        bool hasChildren = false;
+        for(const auto& child : children)
+        {
+            if(child)
+            {
+                hasChildren = true;
+                break;
+            }
+        }
+        if(hasChildren)
+            shortValue += value;
+        else if(!value.empty() )
+        {
+            shortValue += std::string(value.begin(), value.begin()+1);
+        }
+        shortValueIsLoaded = true;
+    }
+    return shortValue;
+}
+
+}
+
+void NickNameTree::splitNode(internal::NickNameTreeNode& node, std::string::iterator splitIterator)
+{
+    node.isEnd = false;
+    auto newChildPosition = *splitIterator - ALPHABET_FIRST_SYMBOL;
+    assert(newChildPosition >= 0 && newChildPosition <= ALPHABET_SIZE);
+    auto newChild =
+            std::make_unique<internal::NickNameTreeNode>(std::string(splitIterator, node.value.end() ), nullptr, true);
+    for(size_t pos = 0; pos < ALPHABET_SIZE; ++pos)
+    {
+        if(node.children[pos])
+        {
+            node.children[pos]->parent = newChild.get();
+            newChild->children[pos] = std::move(node.children[pos]);
+        }
+    }
+    newChild->parent = &node;
+    node.children[newChildPosition] = std::move(newChild);
+    node.value.assign(node.value.begin(), splitIterator);
+}
+
+void NickNameTree::insert(std::string insVal)
+{
+    if(insVal.empty() )
+        return;
+
+    internal::NickNameTreeNode* parentNode = &m_root;
+    auto ind = insVal[0] - ALPHABET_FIRST_SYMBOL;
+    while(parentNode->child(ind) && !insVal.empty() )
+    {
+        std::string& valueInTree = parentNode->child(ind)->value;
+        if(valueInTree.size() < insVal.size() )
+        {
+            auto pair = std::mismatch(valueInTree.begin(), valueInTree.end(), insVal.begin() );
+            if(pair.first != valueInTree.end() )
+            {
+                splitNode(*parentNode->child(ind), pair.first);
+            }
+            insVal.assign(pair.second, insVal.end() );
+        }
+        else
+        {
+            auto pair = std::mismatch(insVal.begin(), insVal.end(), valueInTree.begin() );
+            if(pair.second != valueInTree.end() )
+            {
+                splitNode(*parentNode->child(ind), pair.second);
+            }
+            insVal.assign(pair.first, insVal.end() );
+        }
+        if(!insVal.empty() )
+        {
+            parentNode = parentNode->child(ind);
+            ind = insVal[0] - ALPHABET_FIRST_SYMBOL;
+        }
+    }
+    if(!insVal.empty() )
+    {
+        parentNode->children[ind] =
+                std::make_unique<internal::NickNameTreeNode>(insVal, parentNode, true);
+        ++m_size;
+    }
+}
+
+NickNameTree::iterator NickNameTree::begin() const
 {
     nickname::internal::NickNameTreeNode* result = nullptr;
 
-    for(nickname::internal::NickNameTreeNode* node = &m_root; node;)
+    for(auto node = &m_root; node;)
     {
         size_t ind = 0;
         while(!node->children[ind] && ind < node->children.size() )

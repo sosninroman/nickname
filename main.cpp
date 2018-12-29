@@ -3,19 +3,20 @@
 
 int main()
 {
-    nickname::NickNameTree nickNameTree2;
+    nickname::NickNameTree nickNameTree;
 
-    nickNameTree2.insert("alek");
-    nickNameTree2.insert("sasha");
-    nickNameTree2.insert("aleks");
-    nickNameTree2.insert("aleksey");
-    nickNameTree2.insert("alesha");
+    nickNameTree.insert("alek");
+    nickNameTree.insert("sasha");
+    nickNameTree.insert("aleks");
+    nickNameTree.insert("aleksey");
+    nickNameTree.insert("alesha");
 
-    for(const auto pair : nickNameTree2)
+
+    for(auto pair = nickNameTree.begin() ; pair != nickNameTree.end(); ++pair)
     {
-        std::cout << "{" << pair.first << "," << pair.second << "}" << std::endl;
+        std::cout << "{" << pair.fullValue() << ", " << pair.shortValue() << "}" << std::endl;
     }
     std::cout << std::endl;
-    nickNameTree2.print();
+    nickNameTree.print();
     return 0;
 }

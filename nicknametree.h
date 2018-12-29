@@ -7,13 +7,11 @@
 #include <array>
 #include <string>
 
-namespace nicknametest
-{
-class NickNameTreeAccessor;
-}
-
 namespace nickname
 {
+
+const int ALPHABET_SIZE = 26;
+const char ALPHABET_FIRST_SYMBOL = 'a';
 
 namespace internal
 {
@@ -26,17 +24,21 @@ struct NickNameTreeNode
     NickNameTreeNode(std::string str, NickNameTreeNode* parent, bool isEnd = false):
         value(std::move(str) ),isEnd(isEnd), parent(parent){}
 
+    NickNameTreeNode* child(size_t ind) {return children[ind].get();}
+
+    const std::string& getFullValue() const;
+    const std::string& getShortValue() const;
+
     std::string value;
     bool isEnd = false;
-    std::array<std::unique_ptr<NickNameTreeNode>, 26> children;
-
-    friend class NickNameTreeIterator;
-
-    const std::pair<std::string, std::string>& getValue() const;
-
+    std::array<std::unique_ptr<NickNameTreeNode>, ALPHABET_SIZE> children;
     NickNameTreeNode* parent = nullptr;
-    mutable std::pair<std::string, std::string> cacheValue;
-    mutable bool cacheIsLoaded = false;
+
+private:
+    mutable std::string fullValue;
+    mutable bool fullValueIsLoaded = false;
+    mutable std::string shortValue;
+    mutable bool shortValueIsLoaded = false;
 };
 
 struct InsertPair
@@ -56,14 +58,24 @@ public:
     {
     }
 
-    const std::pair<std::string, std::string>& operator*() const noexcept
+    const std::string& fullValue() const
     {
-        return node->getValue();
+        return node->getFullValue();
     }
 
-    const std::pair<std::string, std::string>* operator->() const noexcept
+    const std::string& shortValue() const
     {
-        return &(node->getValue() );
+        return node->getShortValue();
+    }
+
+    const std::string& operator*() const noexcept
+    {
+        return node->value;
+    }
+
+    const std::string* operator->() const noexcept
+    {
+        return &(node->value);
     }
 
     NickNameTreeIterator& operator++() noexcept
@@ -86,61 +98,8 @@ public:
     { return node != rhs.node; }
 
 private:
-
-    void switchToNext()
-    {
-        auto child = findDown(node, 0);
-        if(child)
-        {
-            node = child;
-        }
-        else
-        {
-            auto ind = node->value[0] - 'a';
-            node = node->parent;
-            while(node)
-            {
-                auto child = findDown(node, ind+1);
-                if(child)
-                {
-                    node = child;
-                    break;
-                }
-                else
-                {
-                    ind = node->value[0] - 'a';
-                    node = node->parent;
-                }
-            }
-        }
-    }
-
-    NickNameTreeNode* findDown(NickNameTreeNode* startNode, size_t startInd)
-    {
-        std::stack<NickNameTreeNode*> searchStack;
-        searchStack.push(startNode);
-        while(!searchStack.empty() )
-        {
-            NickNameTreeNode* searchNode = searchStack.top();
-            searchStack.pop();
-            for(auto ind = startInd; ind < searchNode->children.size(); ++ind)
-            {
-                auto child = searchNode->children[ind].get();
-                if(child)
-                {
-                    if(child->isEnd)
-                    {
-                        return child;
-                    }
-                    else
-                    {
-                        searchStack.push(child);
-                    }
-                }
-            }
-        }
-        return nullptr;
-    }
+    void switchToNext();
+    NickNameTreeNode* findDown(NickNameTreeNode* startNode, size_t startInd);
 
     NickNameTreeNode* node;
 };
@@ -156,23 +115,15 @@ public:
 
     size_t size() const {return m_size;}
 
-    void insert(const std::string& str);
+    void insert(std::string insVal);
 
-    iterator begin();
-    iterator end()
-    {
-        return iterator();
-    }
+    iterator begin() const;
+    iterator end() const { return iterator();}
 
     void print() const;
 private:
-    void __insert(int& ind, internal::NickNameTreeNode*& node,
-                                std::string& valueInTree,
-                                internal::InsertPair& insertPair,
-                                std::string::iterator valueInTreeIterator, std::string::iterator insertValueIterator);
-
-    friend class nicknametest::NickNameTreeAccessor;
-    size_t m_size;
+    void splitNode(internal::NickNameTreeNode &node, std::string::iterator splitIterator);
+    size_t m_size = 0;
     internal::NickNameTreeNode m_root;
 };
 

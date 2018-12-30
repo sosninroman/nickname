@@ -114,8 +114,8 @@ const std::string& NickNameTreeNode::getShortValue() const
 void NickNameTree::splitNode(internal::NickNameTreeNode& node, std::string::iterator splitIterator)
 {
     node.isEnd = false;
-    auto newChildPosition = *splitIterator - ALPHABET_FIRST_SYMBOL;
-    assert(newChildPosition >= 0 && newChildPosition <= ALPHABET_SIZE);
+    auto ind = *splitIterator - ALPHABET_FIRST_SYMBOL;
+    assert(ind >= 0 && ind <= ALPHABET_SIZE);
     auto newChild =
             std::make_unique<internal::NickNameTreeNode>(std::string(splitIterator, node.value.end() ), nullptr, true);
     for(size_t pos = 0; pos < ALPHABET_SIZE; ++pos)
@@ -127,7 +127,7 @@ void NickNameTree::splitNode(internal::NickNameTreeNode& node, std::string::iter
         }
     }
     newChild->parent = &node;
-    node.children[newChildPosition] = std::move(newChild);
+    node.children[ind] = std::move(newChild);
     node.value.assign(node.value.begin(), splitIterator);
 }
 
@@ -138,12 +138,13 @@ void NickNameTree::insert(std::string insVal)
 
     internal::NickNameTreeNode* parentNode = &m_root;
     auto ind = insVal[0] - ALPHABET_FIRST_SYMBOL;
+    assert(ind >= 0 && ind <= ALPHABET_SIZE);
     while(parentNode->child(ind) && !insVal.empty() )
     {
-        std::string& valueInTree = parentNode->child(ind)->value;
+        auto& valueInTree = parentNode->child(ind)->value;
         if(valueInTree.size() < insVal.size() )
         {
-            auto pair = std::mismatch(valueInTree.begin(), valueInTree.end(), insVal.begin() );
+            const auto pair = std::mismatch(valueInTree.begin(), valueInTree.end(), insVal.begin() );
             if(pair.first != valueInTree.end() )
             {
                 splitNode(*parentNode->child(ind), pair.first);
@@ -152,16 +153,16 @@ void NickNameTree::insert(std::string insVal)
         }
         else
         {
-            auto pair = std::mismatch(insVal.begin(), insVal.end(), valueInTree.begin() );
+            const auto pair = std::mismatch(insVal.begin(), insVal.end(), valueInTree.begin() );
             if(pair.second != valueInTree.end() )
             {
                 splitNode(*parentNode->child(ind), pair.second);
             }
             insVal.assign(pair.first, insVal.end() );
         }
+        parentNode = parentNode->child(ind);
         if(!insVal.empty() )
         {
-            parentNode = parentNode->child(ind);
             ind = insVal[0] - ALPHABET_FIRST_SYMBOL;
         }
     }
@@ -179,23 +180,23 @@ NickNameTree::iterator NickNameTree::begin() const
 
     for(auto node = &m_root; node;)
     {
-        size_t ind = 0;
-        while(!node->children[ind] && ind < node->children.size() )
+        internal::NickNameTreeNode* nextNode = nullptr;
+        for(const auto& child : node->children)
         {
-            ++ind;
-        }
-
-        if(ind < node->children.size() )
-        {
-            if(node->children[ind]->isEnd)
+            if(child)
             {
-                result = node->children[ind].get();
+                if(child->isEnd)
+                {
+                    result = child.get();
+                }
+                else
+                {
+                    nextNode = child.get();
+                }
                 break;
             }
-            node = node->children[ind].get();
         }
-        else
-            break;
+        node = nextNode;
     }
     return iterator(result);
 }

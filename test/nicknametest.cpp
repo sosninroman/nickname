@@ -117,3 +117,54 @@ TEST(NICKNAME_TEST, test4)
     ++itr;
     ASSERT_EQ(itr, nickNameTree.end() );
 }
+
+TEST(NICKNAME_TEST, test5)
+{
+    nickname::NickNameTree nickNameTree;
+    auto itr = nickNameTree.begin();
+    ASSERT_EQ(itr, nickNameTree.end() );
+}
+
+TEST(NICKNAME_TEST, test6)
+{
+    nickname::NickNameTree nickNameTree;
+    nickNameTree.insert("val");
+    nickNameTree.insert("val");
+    nickNameTree.insert("val");
+    ASSERT_EQ(nickNameTree.size(), 1);
+    auto itr = nickNameTree.begin();
+    ASSERT_EQ(itr.fullValue(), "val");
+    ASSERT_EQ(itr.shortValue(), "v");
+    ++itr;
+    ASSERT_EQ(itr, nickNameTree.end() );
+}
+
+TEST(NICKNAME_TEST, test7)
+{
+    nickname::NickNameTree nickNameTree;
+    nickNameTree.insert("abcf");
+    nickNameTree.insert("abdf");
+    nickNameTree.insert("abdg");
+    nickNameTree.insert("abef");
+    nickNameTree.insert("bc");
+
+    ASSERT_EQ(nickNameTree.size(), 5);
+
+    auto itr = nickNameTree.begin();
+    ASSERT_EQ(itr.fullValue(), "abcf");
+    ASSERT_EQ(itr.shortValue(), "abc");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "abdf");
+    ASSERT_EQ(itr.shortValue(), "abdf");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "abdg");
+    ASSERT_EQ(itr.shortValue(), "abdg");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "abef");
+    ASSERT_EQ(itr.shortValue(), "abe");
+    ++itr;
+    ASSERT_EQ(itr.fullValue(), "bc");
+    ASSERT_EQ(itr.shortValue(), "b");
+    ++itr;
+    ASSERT_EQ(itr, nickNameTree.end() );
+}

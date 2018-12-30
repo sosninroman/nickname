@@ -19,7 +19,9 @@ void NickNameTreeIterator::switchToNext()
     }
     else
     {
+        assert(!node->value.empty() );
         auto ind = node->value[0] - ALPHABET_FIRST_SYMBOL;
+        assert(ind >= 0 && ind <= ALPHABET_SIZE);
         node = node->parent;
         while(node)
         {
@@ -31,7 +33,11 @@ void NickNameTreeIterator::switchToNext()
             }
             else
             {
-                ind = node->value[0] - ALPHABET_FIRST_SYMBOL;
+                if(node->parent)
+                {
+                    assert(!node->value.empty() );
+                    ind = node->value[0] - ALPHABET_FIRST_SYMBOL;
+                }
                 node = node->parent;
             }
         }
@@ -48,7 +54,7 @@ NickNameTreeNode* NickNameTreeIterator::findDown(NickNameTreeNode* startNode, si
         searchStack.pop();
         for(auto ind = startInd; ind < searchNode->children.size(); ++ind)
         {
-            auto child = searchNode->children[ind].get();
+            auto child = searchNode->child(ind);
             if(child)
             {
                 if(child->isEnd)
@@ -59,8 +65,10 @@ NickNameTreeNode* NickNameTreeIterator::findDown(NickNameTreeNode* startNode, si
                 {
                     searchStack.push(child);
                 }
+                break;
             }
         }
+        startInd = 0;
     }
     return nullptr;
 }
@@ -99,10 +107,12 @@ const std::string& NickNameTreeNode::getShortValue() const
             }
         }
         if(hasChildren)
+        {
             shortValue += value;
+        }
         else if(!value.empty() )
         {
-            shortValue += std::string(value.begin(), value.begin()+1);
+            shortValue += value.front();
         }
         shortValueIsLoaded = true;
     }
@@ -139,6 +149,7 @@ void NickNameTree::insert(std::string insVal)
     internal::NickNameTreeNode* parentNode = &m_root;
     auto ind = insVal[0] - ALPHABET_FIRST_SYMBOL;
     assert(ind >= 0 && ind <= ALPHABET_SIZE);
+
     while(parentNode->child(ind) && !insVal.empty() )
     {
         auto& valueInTree = parentNode->child(ind)->value;

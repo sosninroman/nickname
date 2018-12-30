@@ -124,8 +124,6 @@ const std::string& NickNameTreeNode::getShortValue() const
 void NickNameTree::splitNode(internal::NickNameTreeNode& node, std::string::iterator splitIterator)
 {
     node.isEnd = false;
-    auto ind = *splitIterator - ALPHABET_FIRST_SYMBOL;
-    assert(ind >= 0 && ind <= ALPHABET_SIZE);
     auto newChild =
             std::make_unique<internal::NickNameTreeNode>(std::string(splitIterator, node.value.end() ), nullptr, true);
     for(size_t pos = 0; pos < ALPHABET_SIZE; ++pos)
@@ -137,6 +135,9 @@ void NickNameTree::splitNode(internal::NickNameTreeNode& node, std::string::iter
         }
     }
     newChild->parent = &node;
+
+    auto ind = *splitIterator - ALPHABET_FIRST_SYMBOL;
+    assert(ind >= 0 && ind <= ALPHABET_SIZE);
     node.children[ind] = std::move(newChild);
     node.value.assign(node.value.begin(), splitIterator);
 }

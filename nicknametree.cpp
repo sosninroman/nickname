@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cassert>
+#include <stack>
 
 namespace nickname
 {

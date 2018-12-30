@@ -2,7 +2,6 @@
 #define NICKNAMETREE_H
 
 #include <utility>
-#include <stack>
 #include <memory>
 #include <array>
 #include <string>
